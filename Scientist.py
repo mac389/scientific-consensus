@@ -1,4 +1,4 @@
-import random 
+import random, os  
 import numpy as np 
 from awesome_print import ap 
 
@@ -22,7 +22,6 @@ from awesome_print import ap
        Distinguishing between consensus and accuracy
 '''
 
-
 class Scientist(object):
 
 	def __init__(self,anchor=None,adjustment=None,label=None,iterations=10, homophily=None):
@@ -32,10 +31,44 @@ class Scientist(object):
 		self.iterations = iterations
 		self.homophily = homophily if homophily is not None else random.random()
 		self.estimate_of_pi = self.estimate_pi()
-	
+
+		self.consensus = None
+		self.fraction_of_each_paper_containing_science = 0.5
+		self.article_length = 100
+		self.threshold_for_writing_paper = 0.9
+
+		self.outpath = os.path.join(os.getcwd(),'papers',self.label)
+
+		if not os.path.isdir(self.outpath):
+			os.makedirs(self.outpath)
 
 	def __str__(self):
 		return '%.02f'%self.estimate_of_pi
+
+	def experiment(self):
+		self.estimate_of_pi = self.estimate_pi()
+
+	def write_paper(self,time):
+		if random.random() > self.threshold_for_writing_paper:
+			#assume all papers are the same length, 100 words
+
+			consensus_count = max(1,int((1-self.fraction_of_each_paper_containing_science)*self.consensus*self.article_length))
+			disagreement_count = int((1-self.fraction_of_each_paper_containing_science)*(1-self.consensus)*self.article_length)
+			scientific_count = int(self.fraction_of_each_paper_containing_science*self.article_length)
+
+			with open('vocabulary-consensus','rb') as consensus_words, open('vocabulary-disagreement','rb') as disagreement_words, open('vocabulary-science','rb') as science_words:
+				paper = random.sample(consensus_words.read().splitlines(),consensus_count)
+				paper += random.sample(disagreement_words.read().splitlines(),disagreement_count)
+				paper += random.sample(science_words.read().splitlines(),scientific_count)
+
+			with open(os.path.join(self.outpath,'%s'%time),'wb') as outfile:
+				for word in paper:
+					print>>outfile,word
+			'''
+					paper = (1-b) *( a*consensus + (1-a)*disagreement) + (b)*science
+					b = fraction of science to opinion
+					a = fraction of consensus to disagreement
+			'''
 
 	def estimate_pi(self,repeats=1000):
 		run_estimate = np.zeros((repeats,))
