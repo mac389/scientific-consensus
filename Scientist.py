@@ -51,7 +51,6 @@ class Scientist(object):
 	def write_paper(self,time):
 		if random.random() > self.threshold_for_writing_paper:
 			#assume all papers are the same length, 100 words
-
 			consensus_count = max(1,int((1-self.fraction_of_each_paper_containing_science)*self.consensus*self.article_length))
 			disagreement_count = int((1-self.fraction_of_each_paper_containing_science)*(1-self.consensus)*self.article_length)
 			scientific_count = int(self.fraction_of_each_paper_containing_science*self.article_length)
